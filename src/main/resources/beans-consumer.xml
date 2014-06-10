@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/integration"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:context="http://www.springframework.org/schema/context"
+             xmlns:hz="http://www.hazelcast.com/schema/spring"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans
+                                 http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/context
+                                 http://www.springframework.org/schema/context/spring-context.xsd
+                                 http://www.springframework.org/schema/integration
+                                 http://www.springframework.org/schema/integration/spring-integration-2.2.xsd
+                                 http://www.hazelcast.com/schema/spring
+                                 http://www.hazelcast.com/schema/spring/hazelcast-spring-2.0.xsd">
+    <annotation-config/>
+    <context:component-scan base-package="org.techmytalk.springsample.integration"/>
+    <gateway id="request" service-interface="org.techmytalk.springsample.integration.SentRequest"/>
+    
+    <channel id="sendRequest">
+        <queue ref="hazelcastQueue"/>
+    </channel>
+    
+    <outbound-channel-adapter channel="sendRequest"  ref="receiveResponse" method="processMessage" />
+    <poller default="true" fixed-delay="50"/>
+    
+    <beans:import resource="beans-hazelcast.xml"/>
+</beans:beans>

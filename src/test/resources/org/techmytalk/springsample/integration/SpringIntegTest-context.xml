@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/integration"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:context="http://www.springframework.org/schema/context"
+             xmlns:hz="http://www.hazelcast.com/schema/spring"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans
+                                 http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/context
+                                 http://www.springframework.org/schema/context/spring-context.xsd
+                                 http://www.springframework.org/schema/integration
+                                 http://www.springframework.org/schema/integration/spring-integration-2.2.xsd
+                                 http://www.hazelcast.com/schema/spring
+                                 http://www.hazelcast.com/schema/spring/hazelcast-spring-2.0.xsd">
+    <!-- 
+           sendRequest
+            receiveRequest
+    -->
+    <annotation-config/>
+    <context:component-scan base-package="org.techmytalk.springsample.integration"/>
+    <gateway id="request" service-interface="org.techmytalk.springsample.integration.SentRequest"/>
+    <channel id="sendRequest">
+        <queue ref="hazelcastQueue"/>
+    </channel>
+    <outbound-channel-adapter channel="sendRequest"  ref="receiveResponse" method="processMessage" />
+    <poller default="true" fixed-delay="5"/>
+    
+    <hz:hazelcast id="instance">
+        <hz:config>
+            <hz:group name="dev" password="dev"/>
+            <hz:properties>
+                <hz:property name="hazelcast.merge.first.run.delay.seconds">5</hz:property>
+                <hz:property name="hazelcast.merge.next.run.delay.seconds">5</hz:property>
+            </hz:properties>
+
+            <hz:network port="5701" port-auto-increment="true">
+                <hz:join>
+                    <hz:multicast enabled="true" />
+                </hz:join>
+            </hz:network>
+        </hz:config>
+    </hz:hazelcast>
+
+    <hz:queue id="hazelcastQueue" instance-ref="instance" name="hazelcastQueue"/>
+</beans:beans>
